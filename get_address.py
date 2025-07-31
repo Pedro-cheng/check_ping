@@ -30,15 +30,15 @@ def chose_address_book():
         # not a valid filename and not a valid number
         except ValueError:
             print("Invalid choice")
-    print(f"Check the hosts in \"{valid_choice}\" !")
     return os.path.join(os.path.curdir,'address_book',valid_choice)
 
 # generate lines from choosed file
 def line_generator(address_book):
+    print(f"Check the hosts in \"{address_book}\" !")
     with open(address_book, "r") as f:
         for line in f:
             # get rid of empty lines and comments
-            if (not line.strip()) or line.startswith("#"):
+            if (not line.strip()) or line.strip().startswith("#"):
                 pass
             else:
                 yield line
@@ -49,7 +49,7 @@ def express_generator(line_generator):
             # get next line
             line = next(line_generator)
             # match ipv4 expression x(-y).x(-y).x(-y).x(-y) like 192.168.0.1-255
-            line_express = re.findall(r'[\d]{1,3}[\-]?[\d]{0,3}.[\d]{1,3}[\-]?[\d]{0,3}.[\d]{1,3}[\-]?[\d]{0,3}.[\d]{1,3}[\-]?[\d]{0,3}',line)
+            line_express = re.findall(r'[\d]{1,3}[\-]?[\d]{0,3}\.[\d]{1,3}[\-]?[\d]{0,3}\.[\d]{1,3}[\-]?[\d]{0,3}\.[\d]{1,3}[\-]?[\d]{0,3}',line)
             if line_express:
                 for express in line_express:
                     yield(express)
@@ -60,9 +60,15 @@ def express_generator(line_generator):
 # turn express generator into a address generator
 def address_generator(express_generator):
     try:
-        # get next express
-        express = next(express_generator)
-        # todo : turn express generator into a address generator
+        while True:
+            # get next express
+            express = next(express_generator)
+            # 192-0.123.888.9-3 -> [('192', '0', '123', '', '888', '', '9', '3')]
+            deal_express = re.findall(r'([\d]{1,3})[\-]?([\d]{1,3})?\.([\d]{1,3})[\-]?([\d]{0,3})?\.([\d]{1,3})[\-]?([\d]{0,3})?\.([\d]{1,3})[\-]?([\d]{0,3})?',express)
+            ip_expression = deal_express[0]
+            # todo : turn ip expression into a group address 
+            ip = ip_expression
+            yield ip
     # remind to deal with StopIteration
     except StopIteration:
         pass
@@ -74,6 +80,6 @@ if __name__ == "__main__":
     express_generater = get_time(express_generator,line_generator)
     try:
         for i in range(17):
-            print(get_time(next,express_generater))
+            print(get_time(next,address_generator(express_generater)))
     except StopIteration:
         print("No more addresses")
