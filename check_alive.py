@@ -1,4 +1,5 @@
 import subprocess, platform, socket
+from tools import count_time
 
 def ping_alive(host, timeout=1):
     count = "-n" if platform.system().lower() == "windows" else "-c"
@@ -15,12 +16,34 @@ def tcp_alive(host, port=80, timeout=1):
     except (OSError, socket.timeout):
         return False
 
+def check_alive(host:str, possible_ports:tuple):
+    # ping_test failed
+    if not ping_alive(host=host,timeout=1):
+        for port in possible_ports:
+            if tcp_alive(host=host,port=port,timeout=1):
+                return True
+        return False
+    return True
 
 # 测试
 if __name__ =='__main__':
-    test_set = [('8.8.8.8',(53,80,443)),('114.114.114.114',(53,80,443))]
-    for host in test_set:
-        address = host[0]
-        print(f'ping test\t{address}\t\t: {ping_alive(address)}')
-        for ports in host[1]:
-            print(f'tcp test\t{address}:{ports}\t: {tcp_alive(address,ports)}')
+    test_ip = [
+        ('119.29.29.29'),
+        ('8.8.8.8'),
+        ('114.114.114.114'),
+        ('192.168.88.88')
+        ]
+    test_port = (53,80,443,8080,8443)
+    @count_time
+    def count_through():
+        for address in test_ip:
+            print(f'ping test {address:>16}{'':6} : {ping_alive(address)}')
+            for ports in test_port:
+                print(f'tcp test {address:>17}:{ports:<5} : {tcp_alive(address,ports)}')
+    @count_time
+    def count_skip():
+        for address in test_ip:
+            print(f"{address:>16} check: {check_alive(host=address,possible_ports=test_port)}")
+        
+    count_through()
+    count_skip()
