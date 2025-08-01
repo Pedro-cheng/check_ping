@@ -10,7 +10,8 @@ def init_ip_pool(ip_generator):
     # get all ip into queue for multiprocessing
     try:
         for ip in ip_generator:
-             IP_POOL.put(ip)
+            IP_POOL.put(ip)
+        print("POOL SIZE: ",IP_POOL.qsize())
     except StopIteration:
         pass
 
@@ -29,6 +30,10 @@ def process_check_alive(ip_pool,output):
                 output.put(host_ip)
     except Exception as e:
         print(e)
+
+def failed_address_generator(mp_que):
+    while not mp_que.empty():
+        yield mp_que.get()
 
 
 if __name__ == "__main__":
@@ -50,10 +55,15 @@ if __name__ == "__main__":
 
     for p in processes:
         p.join()
-    res = []
-    while not FAILED.empty():
-        res.append(FAILED.get())
+    print(f"done , {FAILED.qsize()} failed ip")
     report_path = tools.get_report_path('fail_reports',time.localtime())
+    failed_generator = failed_address_generator(FAILED)
+    num_res = 0
     with open(report_path,'a',encoding='utf-8') as f:
-        print('\n'.join(res),file=f)
-    print(f"all {len(res)} failed ip , report path : {report_path}")
+        try:
+            while True:
+                failed_ip = next(failed_generator)
+                num_res += 1
+                print(failed_ip,file=f)
+        except StopIteration:
+            print(f"all {num_res} failed ip , report path : {report_path}")

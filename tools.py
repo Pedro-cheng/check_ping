@@ -27,7 +27,9 @@ def chose_address_book():
             for i, file in enumerate(all_files):
                 # for human readability, start from 1
                 print(f"{i+1:>3}{'':2}{file}")
-            choice = input("Choose an address book (number or name): \n")
+            choice = input("Choose an address book (number or name, default 1): \n")
+            if choice == '':
+                choice = 1
             # check if the input is a filename
             if choice in all_files:
                 # choice is already a file name
