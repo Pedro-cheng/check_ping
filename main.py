@@ -32,6 +32,7 @@ def process_check_alive(ip_pool,output):
 
 
 if __name__ == "__main__":
+    mp.set_start_method('spawn') 
     process_limit = 16
     input_file = tools.chose_address_book()
     ip_pool = init_ip_pool(get_address.build_ip_pool(input_file))
