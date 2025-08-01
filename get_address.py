@@ -6,7 +6,7 @@ import re
 # generate lines from choosed file
 def line_generator(address_book):
     print(f"Check the hosts in \"{address_book}\" !")
-    with open(address_book, "r") as f:
+    with open(address_book, "r", encoding='utf-8') as f:
         for line in f:
             # get rid of empty lines and comments
             if (not line.strip()) or line.strip().startswith("#"):
